@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Matrícula de vehículos</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+    label { display: block; margin-top: .8rem; }
+    input, select { width: 100%; padding: .4rem; box-sizing: border-box; }
+    fieldset { margin-top: 1rem; }
+    button { margin-top: 1rem; padding: .5rem 1rem; }
+    .resultado { margin-top: 1.5rem; padding: 1rem; background: #eef6ee; }
+    .error { margin-top: 1.5rem; padding: 1rem; background: #fbeaea; }
+  </style>
+</head>
+<body>
+  <h1>Costo de matrícula</h1>
+  <form method="post">
+    <label>Tipo de vehículo
+      <select name="tipo" id="tipo">
+        {% for valor, nombre in [("auto", "Auto"), ("camioneta", "Camioneta"), ("camion", "Camión")] %}
+        <option value="{{ valor }}" {{ "selected" if d.get("tipo") == valor }}>{{ nombre }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Placa <input name="placa" value="{{ d.get('placa', '') }}" required></label>
+    <label>Marca <input name="marca" value="{{ d.get('marca', '') }}" required></label>
+    <label>Modelo <input name="modelo" value="{{ d.get('modelo', '') }}" required></label>
+    <label>Año de fabricación <input type="number" name="anioFabricacion" min="1900" max="2100" value="{{ d.get('anioFabricacion', '') }}" required></label>
+    <label>Avalúo (USD) <input type="number" name="avaluo" min="0" step="0.01" value="{{ d.get('avaluo', '') }}" required></label>
+
+    <fieldset id="camioneta">
+      <legend>Datos de la camioneta</legend>
+      <label>Capacidad <input name="capacidad" value="{{ d.get('capacidad', '') }}" required></label>
+      <label>Uso
+        <select name="uso">
+          {% for u in ["personal", "trabajo", "carga"] %}
+          <option value="{{ u }}" {{ "selected" if d.get("uso") == u }}>{{ u.capitalize() }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </fieldset>
+
+    <fieldset id="camion">
+      <legend>Datos del camión</legend>
+      <label>Tonelaje <input type="number" name="tonelaje" min="0" step="0.1" value="{{ d.get('tonelaje', '') }}" required></label>
+      <label>Capacidad de carga (kg) <input type="number" name="capacidadCarga" min="0" step="1" value="{{ d.get('capacidadCarga', '') }}" required></label>
+    </fieldset>
+
+    <button type="submit">Calcular</button>
+  </form>
+
+  {% if resultado %}
+  <div class="resultado">
+    Creador usado: <strong>{{ resultado.creador }}</strong><br>
+    Costo de matrícula: <strong>${{ "%.2f"|format(resultado.costo) }}</strong>
+  </div>
+  {% endif %}
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+  <script>
+    // Muestra solo los campos del tipo elegido; los ocultos se deshabilitan y no se envían.
+    const tipo = document.getElementById("tipo");
+    function mostrarCampos() {
+      for (const id of ["camioneta", "camion"]) {
+        const f = document.getElementById(id);
+        f.hidden = f.disabled = id !== tipo.value;
+      }
+    }
+    tipo.addEventListener("change", mostrarCampos);
+    mostrarCampos();
+  </script>
+</body>
+</html>
